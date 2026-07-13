@@ -111,6 +111,8 @@ export default class CurlDeformer {
 
     private readonly resultCache: VertexResult[] = [];
 
+    private pipeline!: GeometryPipeline;
+
     private readonly tmpVecA = new THREE.Vector3();
 
     private readonly tmpVecB = new THREE.Vector3();
