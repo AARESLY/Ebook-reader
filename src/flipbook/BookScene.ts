@@ -30,7 +30,6 @@ export default class BookScene {
     ) {
 
         this.scene = new THREE.Scene();
-
         this.scene.background = null;
 
         this.camera = createCamera(
@@ -39,127 +38,74 @@ export default class BookScene {
         );
 
         this.renderer = createRenderer();
-
         this.renderer.setSize(
             container.clientWidth,
             container.clientHeight
         );
 
-        container.appendChild(
-            this.renderer.domElement
-        );
+        container.appendChild(this.renderer.domElement);
 
         addLights(this.scene);
 
-    this.pages = new PageStack();
+        this.pages = new PageStack();
+        this.scene.add(this.pages.mesh);
 
-    this.scene.add(this.pages.mesh);
-
-    this.spine = new BookSpine();
-
-    this.scene.add(this.spine.mesh);
+        this.spine = new BookSpine();
+        this.scene.add(this.spine.mesh);
 
         this.leftPage = new PageMesh();
-
-        this.leftPage.mesh.position.set(
-           -1.05,
-            0,
-            0
-        );
-
-        this.scene.add(
-            this.leftPage.mesh
-        );
+        this.leftPage.mesh.position.set(-1.05, 0, 0);
+        this.scene.add(this.leftPage.mesh);
 
         this.rightPage = new PageMesh();
-
-        this.rightPage.mesh.position.set(
-            1.05,
-            0,
-            0
-        );
-
-        this.scene.add(
-            this.rightPage.mesh
-        );
+        this.rightPage.mesh.position.set(1.05, 0, 0);
+        this.scene.add(this.rightPage.mesh);
 
         this.animate();
-
     }
 
     private animate = () => {
-
-        this.animationId =
-            requestAnimationFrame(
-                this.animate
-            );
-
-        this.renderer.render(
-            this.scene,
-            this.camera
-        );
-
+        this.animationId = requestAnimationFrame(this.animate);
+        this.renderer.render(this.scene, this.camera);
     };
 
     public renderOnce() {
-
-        this.renderer.render(
-            this.scene,
-            this.camera
-        );
-
+        this.renderer.render(this.scene, this.camera);
     }
 
     public resize() {
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
 
-        const w =
-            this.container.clientWidth;
-
-        const h =
-            this.container.clientHeight;
-
-        this.camera.aspect =
-            w / h;
-
+        this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
-
-        this.renderer.setSize(
-            w,
-            h
-        );
-
+        this.renderer.setSize(w, h);
     }
 
     public getRenderer() {
-
         return this.renderer;
-
     }
 
     public getLeftPage() {
-
         return this.leftPage;
-
     }
 
     public getRightPage() {
-
         return this.rightPage;
+    }
 
+    public getLeftPageGeometry() {
+        return this.leftPage.geometry;
+    }
+
+    public getRightPageGeometry() {
+        return this.rightPage.geometry;
     }
 
     public destroy() {
-
-        cancelAnimationFrame(
-            this.animationId
-        );
-
+        cancelAnimationFrame(this.animationId);
         this.leftPage.dispose();
-
         this.rightPage.dispose();
-
         this.renderer.dispose();
-
     }
-
 }
