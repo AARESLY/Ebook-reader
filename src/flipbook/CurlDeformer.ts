@@ -1,5 +1,5 @@
 import * as THREE from "three";
-
+import GeometryPipeline from "./GeometryPipeline";
 import type {
     CurlState,
     FlipCorner,
@@ -27,7 +27,7 @@ export interface CurlDeformerOptions {
 
 }
 
-interface VertexCache {
+export interface VertexCache {
 
     x: number;
 
@@ -41,7 +41,7 @@ interface VertexCache {
 
 }
 
-interface VertexResult {
+export interface VertexResult {
 
     x: number;
 
