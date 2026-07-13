@@ -181,6 +181,14 @@ export default class CurlDeformer {
 
         this.segmentsY  = options.segmentsY;
 
+        this.pipeline = new GeometryPipeline({
+
+             segmentsX: this.segmentsX,
+
+             segmentsY: this.segmentsY
+
+      });
+
     }
 
     /* ------------------------------------------------ */
@@ -198,6 +206,16 @@ export default class CurlDeformer {
 
         this.buildResultCache();
 
+        this.pipeline.initialize(
+
+             geometry,
+
+        this.vertexCache,
+
+        this.resultCache
+
+    );
+     
         this.computePaperConstraint();
 
         this.initialized = true;
