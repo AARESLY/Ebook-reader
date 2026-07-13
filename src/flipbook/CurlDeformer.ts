@@ -354,11 +354,19 @@ export default class CurlDeformer {
 
         this.computeRelaxation();
 
+        this.pipeline.beginFrame();
+
         this.computeNormals();
+
+        this.pipeline.uploadVertices();
+
+        this.pipeline.recomputeNormals();
+
+        this.pipeline.finishFrame();
 
         this.commitGeometry(
             geometry
-        );
+        );    
 
     }
 
