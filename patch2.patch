@@ -1,0 +1,33 @@
+--- src/App.tsx
++++ src/App.tsx
+@@ -5,11 +5,12 @@
+ 
+ import React, { useState, useRef, useMemo, useEffect } from 'react';
+-import { Book, FileUp, Plus, Trash2, Search, Clock, Edit2, Layers, Star, Tag, Download, LayoutGrid, List, ArrowDownAZ } from 'lucide-react';
++import { Book, FileUp, Plus, Trash2, Search, Clock, Edit2, Layers, Star, Tag, Download, LayoutGrid, List, ArrowDownAZ, Settings } from 'lucide-react';
+ import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+ import ePub from 'epubjs';
+ import Reader from './components/Reader';
+ import ExpandedBookModal from './components/ExpandedBookModal';
+ import TagsModal from './components/TagsModal';
++import ShelfCustomizeModal, { ShelfStyle } from './components/ShelfCustomizeModal';
+ import { BarChart2 } from 'lucide-react';
+ import ReadingDashboard from './components/dashboard/ReadingDashboard';
+ 
+@@ -34,6 +35,8 @@
+   interface LibraryShelf {
+     id: string;
+     name: string;
++    woodType?: 'oak' | 'mahogany' | 'pine' | 'ebony' | 'walnut';
++    labelStyle?: 'wood' | 'brass' | 'silver' | 'minimal';
+   }
+ 
+   const [books, setBooks] = useState<LibraryBook[]>([]);
+@@ -46,6 +49,7 @@
+   const [searchQuery, setSearchQuery] = useState('');
+   const [sortBy, setSortBy] = useState<'title' | 'date' | 'manual' | 'author'>('manual');
+   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+   const [shelves, setShelves] = useState<LibraryShelf[]>([{id: 'default', name: 'My Library'}]);
++  const [customizeShelfId, setCustomizeShelfId] = useState<string | null>(null);
+   const [editingShelfId, setEditingShelfId] = useState<string | null>(null);
+   const [editingShelfName, setEditingShelfName] = useState('');

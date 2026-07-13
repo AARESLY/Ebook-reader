@@ -1,0 +1,37 @@
+--- src/components/Reader.tsx
++++ src/components/Reader.tsx
+@@ -73,6 +73,8 @@
+   const [fontSize, setFontSize] = useState(100);
+   const [location, setLocation] = useState<string | number>('');
+   const [progress, setProgress] = useState(0);
++  const [milestoneMessage, setMilestoneMessage] = useState<string | null>(null);
++  const prevProgressRef = useRef<number | null>(null);
+ 
+   useEffect(() => {
+     const handler = setTimeout(() => {
+@@ -82,6 +84,24 @@
+     }, 2000);
+     return () => clearTimeout(handler);
+   }, [progress, onAutoSave]);
++
++  useEffect(() => {
++    if (prevProgressRef.current !== null) {
++      const prev = prevProgressRef.current;
++      const current = progress;
++      
++      if (current > prev && (current - prev) < 0.1) {
++        const milestones = [25, 50, 75, 100];
++        for (const m of milestones) {
++          const mVal = m / 100;
++          if (prev < mVal && current >= mVal) {
++            setMilestoneMessage(`🎉 You've reached ${m}% of the book!`);
++            setTimeout(() => setMilestoneMessage(null), 4000);
++          }
++        }
++      }
++    }
++    prevProgressRef.current = progress;
++  }, [progress]);
+   const [totalPages, setTotalPages] = useState(0);
+   const [minsLeft, setMinsLeft] = useState<number | null>(null);
+   const [pageTransition, setPageTransition] = useState<'next' | 'prev' | 'chapter' | 'none'>('none');

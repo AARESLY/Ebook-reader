@@ -1,0 +1,16 @@
+--- src/components/ExpandedBookModal.tsx
++++ src/components/ExpandedBookModal.tsx
+@@ -42,9 +42,10 @@
+       >
+         <motion.div 
+           className="bg-white dark:bg-[#1f1f1f] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row"
+-          initial={{ y: 50, scale: 0.95 }}
+-          animate={{ y: 0, scale: 1 }}
+-          exit={{ y: 50, scale: 0.95 }}
++          initial={{ opacity: 0, scale: 0.97, y: 16 }}
++          animate={{ opacity: 1, scale: 1, y: 0 }}
++          exit={{ opacity: 0, scale: 0.97, y: 16 }}
++          transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+           onClick={e => e.stopPropagation()}
+         >
+           {/* Cover Section */}

@@ -1,0 +1,25 @@
+--- src/App.tsx
++++ src/App.tsx
+@@ -4,7 +4,7 @@
+  */
+ 
+ import React, { useState, useRef, useMemo, useEffect } from 'react';
+-import { Book, FileUp, Plus, Trash2, Search, Clock, Edit2, Layers, Star, Tag, Download, LayoutGrid, List } from 'lucide-react';
++import { Book, FileUp, Plus, Trash2, Search, Clock, Edit2, Layers, Star, Tag, Download, LayoutGrid, List, ArrowDownAZ } from 'lucide-react';
+ import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+ import ePub from 'epubjs';
+ import Reader from './components/Reader';
+@@ -503,6 +503,13 @@
+             <option value="title">Title</option>
+             <option value="author">Author</option>
+           </select>
++          <button
++            onClick={() => setSortBy(sortBy === 'title' ? 'date' : 'title')}
++            className="flex items-center gap-1.5 bg-[#2a2a2a] border border-white/10 rounded-md py-1.5 px-3 text-xs text-white/80 hover:bg-white/10 hover:text-white transition-colors outline-none shrink-0"
++            title={`Sort by ${sortBy === 'title' ? 'Date' : 'Title'}`}
++          >
++            {sortBy === 'title' ? <Clock size={14} /> : <ArrowDownAZ size={14} />}
++          </button>
+         </div>
+         <button 
+           onClick={addShelf}

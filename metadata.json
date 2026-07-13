@@ -1,0 +1,6 @@
+{
+  "name": "macOS eBook Reader",
+  "description": "A web-based local eBook reader with a macOS-inspired design and smooth page transitions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
