@@ -347,4 +347,66 @@ public updateAll(delta:number):void{
   this.cleanupReleasedPointers();
 }
 
+  
+  protected debugEnabled=false;
+  protected readonly metrics={
+    frames:0,
+    pointerEvents:0,
+    activePointers:0,
+    averagePressure:0
+  };
+
+  protected updateMetrics():void{
+    this.metrics.frames++;
+    this.metrics.activePointers=this.pointers.size;
+    let total=0,count=0;
+    for(const p of this.pointers.values()){
+      total+=p.frame.pressure;
+      count++;
+    }
+    this.metrics.averagePressure=count?total/count:0;
+  }
+
+  public enableDebug(enabled:boolean):void{
+    this.debugEnabled=enabled;
+  }
+
+  public getMetrics(){
+    return {...this.metrics};
+  }
+
+  public updateFrame(delta:number):void{
+    this.updateAll(delta);
+    this.updateMetrics();
+    if(this.debugEnabled){
+      this.debugDraw();
+    }
+  }
+
+  protected debugDraw():void{
+    // Future debug renderer hook.
+  }
+
+  public reset():void{
+    this.history.length=0;
+    this.pointers.clear();
+    this.dragging=false;
+    this.frameIndex=0;
+    this.longPressTriggered=false;
+  }
+
+  public dispose():void{
+    this.dom.removeEventListener("pointerdown",this.onPointerDown);
+    this.dom.removeEventListener("pointermove",this.onPointerMove);
+    this.dom.removeEventListener("pointerup",this.onPointerUp);
+    this.dom.removeEventListener("pointercancel",this.onPointerCancel);
+    this.dom.removeEventListener("pointerleave",this.onPointerLeave);
+    this.reset();
+  }
+
+  public destroy():void{
+    this.dispose();
+  }
+}
+
 
