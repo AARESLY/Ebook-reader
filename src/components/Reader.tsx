@@ -1,5 +1,6 @@
 import BookEngine from "../flipbook/BookEngine";
 import { useDrag } from "@use-gesture/react";
+import html2canvas from "html2canvas";
 
 import React, { useEffect, useRef, useState } from 'react';
 import ePub, { Book, Rendition, Location } from 'epubjs';
@@ -451,8 +452,13 @@ export default function Reader({ file, onClose, initialLocation, onAutoSave }: R
         width: '100%',
         height: '100%',
         spread: 'none',
-        manager: 'continuous',
+        manager: 'default',
         flow: 'paginated'
+      }); 
+
+      console.log("viewer size", {
+          width: viewerRef.current?.clientWidth,
+          height: viewerRef.current?.clientHeight,
       });
 
       setRendition(newRendition);
@@ -515,6 +521,7 @@ export default function Reader({ file, onClose, initialLocation, onAutoSave }: R
 
       displayPromise.then(() => {
           if (isCancelled) return;
+          updateThreeOverlay();
 
           try {
             const saved = localStorage.getItem(`epub_notes_${file.name}_${file.size}`);
@@ -548,10 +555,7 @@ export default function Reader({ file, onClose, initialLocation, onAutoSave }: R
           }
           currentChapterHref = chapterHref;
           const cfi = loc.start.cfi;
-          console.log("loc.start:", loc.start);
-          if (readerBook) {
-            console.log("spine index:", loc.start.index, "spine length:", (readerBook.spine as any).length);
-          }
+          
           setLocation(cfi);
           localStorage.setItem(`epub_location_${file.name}_${file.size}`, cfi);
           if (readerBook!.locations.length() > 0) {
@@ -682,14 +686,13 @@ export default function Reader({ file, onClose, initialLocation, onAutoSave }: R
     bookEngine.current
         ?.getRenderer()
         .domElement
-);
+  );
 
     setEngineReady(true);
 
     const resize = () => {
-
         engine.resize();
-
+        updateThreeOverlay();
     };
 
     window.addEventListener(
@@ -728,14 +731,89 @@ export default function Reader({ file, onClose, initialLocation, onAutoSave }: R
     }
   }, [fontSize, rendition, book]);
 
-  const capturePageTexture = async () => {
-    return null;
+  const capturePageTexture = async (): Promise<HTMLCanvasElement | null> => {
+
+      if (!viewerRef.current) {
+        return null;
+      }
+
+      const iframe = viewerRef.current.querySelector("iframe");
+
+      if (!iframe) {
+          return null;
+      }
+  
+      const doc = iframe.contentDocument;
+
+      if (!doc) {
+          return null;
+      }
+
+      const target =
+          doc.querySelector(".epub-view") ||
+          doc.documentElement;
+
+      console.log("capture target", target);
+      console.log(
+                  "target rect",
+                  (target as HTMLElement).getBoundingClientRect()
+      );
+      const body = doc.body;
+
+      console.log("scrollWidth", body.scrollWidth);
+      console.log("clientWidth", body.clientWidth);
+      console.log("offsetWidth", body.offsetWidth);
+
+      console.log("computed", getComputedStyle(body).columnWidth);
+      console.log("columnGap", getComputedStyle(body).columnGap);
+
+      const canvas = await html2canvas(target as HTMLElement, {
+          backgroundColor: null,
+          scale: window.devicePixelRatio,
+          useCORS: true,
+          logging: false,
+      });
+
+      return canvas;
+  };
+  
+  const updateThreeOverlay = () => {
+
+      if (!viewerRef.current || !threeRef.current) return;
+
+      const iframe = viewerRef.current.querySelector("iframe");
+      const doc = iframe?.contentDocument;
+
+      if (!(iframe instanceof HTMLIFrameElement)) return;
+
+      const rect = iframe.getBoundingClientRect();
+      const parent = viewerRef.current.getBoundingClientRect();
+
+      threeRef.current.style.left = "0px";
+      threeRef.current.style.top = "0px";
+      threeRef.current.style.width = `${rect.width}px`;
+      threeRef.current.style.height = `${rect.height}px`;
+
+  };
+
+  const syncBookEngine = async (): Promise<void> => {
+
+     if (!bookEngine.current) return;
+
+     if (!rendition) return;
+
+     const canvas = await capturePageTexture();
+
+     console.log("Captured canvas:", canvas);
+
   };
 
   const nextPage = async () => {
     if (rendition) {
       setPageTransition('next');
       await rendition.next();
+      
+      await syncBookEngine();
       setTimeout(() => setPageTransition('none'), 300);
     }
   };
@@ -744,6 +822,7 @@ export default function Reader({ file, onClose, initialLocation, onAutoSave }: R
     if (rendition) {
       setPageTransition('prev');
       await rendition.prev();
+      await syncBookEngine();
       setTimeout(() => setPageTransition('none'), 300);
     }
   };
@@ -1561,55 +1640,30 @@ export default function Reader({ file, onClose, initialLocation, onAutoSave }: R
                     
       
               
-              <motion.div 
-     className="w-full h-full"
-     style={{ perspective: '1200px' }}
-   >
-     <motion.div 
-       className="w-full h-full origin-center"
-       style={{ transformStyle: 'preserve-3d' }}
-       initial={false}
-       animate={{ 
-          rotateY: flipState === 'idle' ? 0 : 
-                   flipState === 'flipping-out' ? (curlDirection === 'next' ? -90 : 90) : 
-                   (curlDirection === 'next' ? 90 : -90),
-          scale: flipState === 'idle' ? 1 : 0.9,
-          opacity: flipState === 'idle' ? 1 : 0.8,
-       }}
-       transition={{ 
-          duration: flipState === 'flipping-in' ? 0 : 0.3, 
-          ease: "linear" 
-       }}
-     >
-       <div className="relative w-full h-full overflow-hidden">
+  <motion.div
+      className="w-full h-full"
+      style={{ perspective: "1200px" }}
+  >
+    <div className="w-full h-full">
+        <div className="relative w-full h-full overflow-hidden">
 
-    <div
+            <div
+                ref={viewerRef}
+                className="absolute inset-0 z-10"
+            />
 
-        ref={viewerRef}
+            <div
+                ref={threeRef}
+                className="absolute inset-0 z-20 pointer-events-none"
+                style={{
+                   opacity: 1,
+                   visibility: "visible",
+                }}
+            />
 
-        className="absolute inset-0 z-10"
-
-    />
-
-    <div
-
-        ref={threeRef}
-
-        className="absolute inset-0 z-20 pointer-events-none"
-
-        style={{
-
-            opacity: engineReady ? 1 : 0,
-
-            transition: "opacity .25s"
-
-        }}
-
-    />
-
-      </div>
-       </motion.div>
-   </motion.div>
+        </div>
+    </div>
+</motion.div>
 
               
               

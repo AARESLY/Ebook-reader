@@ -40,18 +40,30 @@ export default class PageMesh {
 
     }
 
-    public setTexture(texture: THREE.Texture) {
+    public setTexture(texture: THREE.Texture): void {
+
+        if (
+            this.material.map &&
+            this.material.map !== texture
+        ) {
+           this.material.map.dispose();
+        }
+
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.needsUpdate = true;
 
         this.material.map = texture;
-
         this.material.needsUpdate = true;
 
     }
 
-    public clearTexture() {
+    public clearTexture(): void {
 
+        if (this.material.map) {
+            this.material.map.dispose();
+        }
+   
         this.material.map = null;
-
         this.material.needsUpdate = true;
 
     }

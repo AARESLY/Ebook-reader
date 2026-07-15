@@ -15,6 +15,7 @@ export interface PageDescriptor {
 }
 
 export default class PageProvider {
+    private listeners = new Set<(provider: PageProvider) => void>();
     private current: PageSnapshot | null = null;
     private previous: PageSnapshot | null = null;
     private next: PageSnapshot | null = null;
@@ -30,6 +31,7 @@ export default class PageProvider {
         if (snapshot) {
             this.pushHistory(snapshot);
         }
+        this.notify();
     }
 
     public setPrevious(snapshot: PageSnapshot | null) {
@@ -38,6 +40,15 @@ export default class PageProvider {
         if (snapshot) {
             this.pushHistory(snapshot);
         }
+        this.notify();
+    }
+
+    public subscribe(listener: (provider: PageProvider) => void): () => void {
+         this.listeners.add(listener);
+
+         return () => {
+             this.listeners.delete(listener);
+         };
     }
 
     public setNext(snapshot: PageSnapshot | null) {
@@ -46,6 +57,7 @@ export default class PageProvider {
         if (snapshot) {
             this.pushFuture(snapshot);
         }
+        this.notify();
     }
 
     public getCurrent() {
@@ -76,6 +88,18 @@ export default class PageProvider {
         this.dirty = false;
     }
 
+    public hasCurrent(): boolean {
+        return this.current !== null;
+    }
+
+    public hasPrevious(): boolean {
+        return this.previous !== null;
+    }
+
+    public hasNext(): boolean {
+        return this.next !== null;
+    }
+
     public swapForward(): void {
         if (!this.current || !this.next) {
             return;
@@ -87,6 +111,7 @@ export default class PageProvider {
         this.pushHistory(this.previous);
         this.pushHistory(this.current);
         this.dirty = true;
+        this.notify();
     }
 
     public swapBackward(): void {
@@ -98,6 +123,7 @@ export default class PageProvider {
         this.previous = null;
         this.history.pop();
         this.dirty = true;
+        this.notify();
     }
 
     public clear(): void {
@@ -107,6 +133,7 @@ export default class PageProvider {
         this.history.length = 0;
         this.future.length = 0;
         this.dirty = true;
+        this.notify();
     }
 
     public invalidateCurrent(): void {
@@ -166,6 +193,12 @@ export default class PageProvider {
         this.history.push(snapshot);
         while (this.history.length > this.maxHistory) {
             this.history.shift();
+        }
+    }
+   
+    private notify(): void {
+        for (const listener of this.listeners) {
+            listener(this);
         }
     }
 

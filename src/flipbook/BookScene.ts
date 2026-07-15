@@ -79,6 +79,10 @@ export default class BookScene {
 
         this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
+        this.renderer.setPixelRatio(
+            Math.min(window.devicePixelRatio, 2)
+        );
+
         this.renderer.setSize(w, h);
     }
 
@@ -92,6 +96,20 @@ export default class BookScene {
 
     public getRightPage() {
         return this.rightPage;
+    }
+
+    public setLeftPageCanvas(canvas: HTMLCanvasElement): void {
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.needsUpdate = true;
+        this.leftPage.setTexture(texture);
+    }
+
+    public setRightPageCanvas(canvas: HTMLCanvasElement): void {
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.needsUpdate = true;
+        this.rightPage.setTexture(texture);
     }
 
     public getLeftPageGeometry() {

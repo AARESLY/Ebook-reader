@@ -11,6 +11,10 @@ export default class BookEngine {
 
     constructor(container: HTMLDivElement) {
         this.scene = new BookScene(container);
+
+        this.provider.subscribe(() => {
+            this.refreshPages();
+        });
     }
 
     public resize() {
@@ -55,7 +59,6 @@ export default class BookEngine {
 
     public setCurrentPage(snapshot: PageSnapshot) {
         this.provider.setCurrent(snapshot);
-        this.updateRightPage(snapshot.canvas);
     }
 
     public setPreviousPage(snapshot: PageSnapshot) {
@@ -66,11 +69,19 @@ export default class BookEngine {
         this.provider.setNext(snapshot);
     }
 
-    public refreshPages() {
+    public refreshPages(): void {
+
+        const previous = this.provider.getPrevious();
         const current = this.provider.getCurrent();
+
+        if (previous) {
+            this.updateLeftPage(previous.canvas);
+        }
+
         if (current) {
             this.updateRightPage(current.canvas);
         }
+
     }
 
     public commitNextPage(): void {
